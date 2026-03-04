@@ -43,13 +43,13 @@ model WorkoutPlan {
 }
 
 enum WeekDay {
+  SUNDAY
   MONDAY
   TUESDAY
   WEDNESDAY
   THURSDAY
   FRIDAY
   SATURDAY
-  SUNDAY
 }
 
 model WorkoutDay {
