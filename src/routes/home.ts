@@ -3,13 +3,17 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 
 import { auth } from "../lib/auth.js";
-import { ErrorSchema, HomeParamsSchema, HomeResponseSchema } from "../schemas/index.js";
+import {
+  ErrorSchema,
+  HomeParamsSchema,
+  HomeResponseSchema,
+} from "../schemas/index.js";
 import { GetHome } from "../usecases/GetHome.js";
 
 export const homeRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
-    url: "/home/:date",
+    url: "/:date",
     schema: {
       tags: ["Home"],
       summary: "Get home data for a specific date",
@@ -52,4 +56,3 @@ export const homeRoutes = async (app: FastifyInstance) => {
     },
   });
 };
-

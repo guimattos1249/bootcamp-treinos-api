@@ -16,7 +16,7 @@ import { UpsertUserTrainData } from "../usecases/UpsertUserTrainData.js";
 export const meRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
-    url: "/me",
+    url: "/",
     schema: {
       tags: ["User"],
       summary: "Get current user train data",
@@ -68,7 +68,7 @@ export const meRoutes = async (app: FastifyInstance) => {
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "PUT",
-    url: "/me",
+    url: "/",
     schema: {
       operationId: "upsertUserTrainData",
       tags: ["User"],
