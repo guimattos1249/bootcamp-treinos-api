@@ -6,15 +6,17 @@ export const ErrorSchema = z.object({
   code: z.string(),
 });
 
+export const WeekDaySchema = z.enum(WeekDay);
+
 export const WorkoutPlanSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1),
   workoutDays: z.array(
     z.object({
       name: z.string().trim().min(1),
-      weekDay: z.enum(WeekDay),
+      weekDay: WeekDaySchema,
       isRest: z.boolean().default(false),
-      estimatedDurationInSeconds: z.number().min(1),
+      estimatedDurationInSeconds: z.number().min(0),
       coverImageUrl: z.url().optional(),
       exercises: z.array(
         z.object({
@@ -60,20 +62,20 @@ export const HomeParamsSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in format YYYY-MM-DD"),
 });
 
+export const WorkoutDaySummarySchema = z.object({
+  workoutPlanId: z.uuid(),
+  id: z.uuid(),
+  name: z.string(),
+  isRest: z.boolean(),
+  weekDay: WeekDaySchema,
+  estimatedDurationInSeconds: z.number(),
+  coverImageUrl: z.url().optional(),
+  exercisesCount: z.number(),
+});
+
 export const HomeResponseSchema = z.object({
   activeWorkoutPlanId: z.uuid().nullable(),
-  todayWorkoutDay: z
-    .object({
-      workoutPlanId: z.uuid(),
-      id: z.uuid(),
-      name: z.string(),
-      isRest: z.boolean(),
-      weekDay: z.enum(WeekDay),
-      estimatedDurationInSeconds: z.number(),
-      coverImageUrl: z.url().optional(),
-      exercisesCount: z.number(),
-    })
-    .nullable(),
+  todayWorkoutDay: WorkoutDaySummarySchema.nullable(),
   workoutStreak: z.number(),
   consistencyByDay: z.record(
     z.iso.date(),
@@ -112,8 +114,8 @@ export const WorkoutPlanDetailsResponseSchema = z.object({
   name: z.string(),
   workoutDays: z.array(
     z.object({
-      id: z.string().uuid(),
-      weekDay: z.enum(WeekDay),
+      id: z.uuid(),
+      weekDay: WeekDaySchema,
       name: z.string(),
       isRest: z.boolean(),
       coverImageUrl: z.string().url().optional(),
@@ -139,7 +141,7 @@ export const ListWorkoutPlansSchema = z.array(
       z.object({
         id: z.uuid(),
         name: z.string(),
-        weekDay: z.enum(WeekDay),
+        weekDay: WeekDaySchema,
         isRest: z.boolean(),
         estimatedDurationInSeconds: z.number(),
         coverImageUrl: z.url().optional(),
@@ -180,7 +182,7 @@ export const WorkoutDayDetailsResponseSchema = z.object({
       restTimeInSeconds: z.number(),
     }),
   ),
-  weekDay: z.enum(WeekDay),
+  weekDay: WeekDaySchema,
   sessions: z.array(
     z.object({
       id: z.uuid(),
