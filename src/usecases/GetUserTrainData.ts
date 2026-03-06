@@ -41,8 +41,7 @@ export class GetUserTrainData {
       weightInGrams: user.weightInGrams,
       heightInCentimeters: user.heightInCentimeters,
       age: user.Age,
-      bodyFatPercentage: user.bodyFatPercentage / 100,
+      bodyFatPercentage: user.bodyFatPercentage,
     };
   }
 }
-
