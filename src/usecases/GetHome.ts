@@ -60,6 +60,7 @@ export class GetHome {
     const dayOfWeek = targetDateUtc.day();
     const weekStart = targetDateUtc.subtract(dayOfWeek, "day").startOf("day");
     const weekEnd = weekStart.add(6, "day").endOf("day");
+    const currentDate = dayjs.utc(dto.date);
 
     const activeWorkoutPlan = await prisma.workoutPlan.findFirst({
       where: {
@@ -100,21 +101,11 @@ export class GetHome {
         };
       }
 
-      const orderedWorkoutDays = [...activeWorkoutPlan.workoutDays].sort(
-        (a, b) => WEEKDAY_ORDER[a.weekDay] - WEEKDAY_ORDER[b.weekDay],
+      workoutStreak = await this.calculateStreak(
+        activeWorkoutPlan.id,
+        activeWorkoutPlan.workoutDays,
+        currentDate,
       );
-
-      for (const day of orderedWorkoutDays) {
-        const hasCompletedSession = day.sessions.some(
-          (session) => session.completedAt !== null,
-        );
-
-        if (hasCompletedSession) {
-          workoutStreak += 1;
-        } else {
-          break;
-        }
-      }
     }
 
     const consistencyByDay: OutputDto["consistencyByDay"] = {};
@@ -165,5 +156,58 @@ export class GetHome {
       workoutStreak,
       consistencyByDay,
     };
+  }
+
+  private async calculateStreak(
+    workoutPlanId: string,
+    workoutDays: Array<{
+      weekDay: string;
+      isRest: boolean;
+      sessions: Array<{ startedAt: Date; completedAt: Date | null }>;
+    }>,
+    currentDate: dayjs.Dayjs,
+  ): Promise<number> {
+    const trainingDays = new Set(
+      workoutDays.filter((d) => !d.isRest).map((d) => d.weekDay),
+    );
+
+    const allSessions = await prisma.workoutSession.findMany({
+      where: {
+        workoutDay: { workoutPlanId },
+        completedAt: { not: null },
+      },
+      select: { completedAt: true },
+    });
+
+    const completedDates = new Set(
+      allSessions
+        .filter((s) => s.completedAt)
+        .map((s) => dayjs.utc(s.completedAt!).format("YYYY-MM-DD")),
+    );
+
+    let streak = 0;
+    let day = currentDate;
+
+    while (true) {
+      const weekDay = DAYJS_WEEKDAY_FROM_UTC[day.day()];
+
+      // se não é dia de treino, ignora
+      if (!trainingDays.has(weekDay)) {
+        day = day.subtract(1, "day");
+        continue;
+      }
+
+      const dateKey = day.format("YYYY-MM-DD");
+
+      if (completedDates.has(dateKey)) {
+        streak++;
+        day = day.subtract(1, "day");
+        continue;
+      }
+
+      break;
+    }
+
+    return streak;
   }
 }
